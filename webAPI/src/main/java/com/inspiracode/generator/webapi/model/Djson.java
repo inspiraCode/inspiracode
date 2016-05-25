@@ -8,6 +8,8 @@ public class Djson implements Serializable {
 
 	private static final long serialVersionUID = 1L;	
 
+	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -15,13 +17,14 @@ public class Djson implements Serializable {
 	public String toString() {
 		return "Djson [projectName=" + projectName + ", description="
 				+ description + ", roles=" + roles + ", deployments="
-				+ deployments + "]";
+				+ deployments + ", entities=" + entities + "]";
 	}
 
 	private String projectName;
 	private String description;
 	private Set<String> roles = new HashSet<String>();
 	private Set<Deployment> deployments = new HashSet<Deployment>();
+	private Set<Entity> entities = new HashSet<Entity>();
 
 	/**
 	 * @return the projectName
@@ -80,5 +83,19 @@ public class Djson implements Serializable {
 	 */
 	public void setDeployments(Set<Deployment> deployments) {
 		this.deployments = deployments;
+	}
+
+	/**
+	 * @return the entities
+	 */
+	public Set<Entity> getEntities() {
+		return entities;
+	}
+
+	/**
+	 * @param entities the entities to set
+	 */
+	public void setEntities(Set<Entity> entities) {
+		this.entities = entities;
 	}
 }
