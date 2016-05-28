@@ -10,9 +10,11 @@ public class Entity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	private Map<String, DataType> RequiredFields = new HashMap<String, DataType>();
-	private Map<String, DataType> OptionalFields = new HashMap<String, DataType>();
-	private Set<BaseComplexField> ComplexFields;
+	private Map<String, DataType> requiredFields = new HashMap<String, DataType>();
+	private Map<String, DataType> optionalFields = new HashMap<String, DataType>();
+	private Set<BaseComplexField> complexFields;
+
+	private EntityRelationship relationships = new EntityRelationship();
 
 	/**
 	 * @return the name
@@ -27,63 +29,6 @@ public class Entity implements Serializable {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	/**
-	 * @return the requiredFields
-	 */
-	public Map<String, DataType> getRequiredFields() {
-		return RequiredFields;
-	}
-
-	/**
-	 * @param requiredFields
-	 *            the requiredFields to set
-	 */
-	public void setRequiredFields(Map<String, DataType> requiredFields) {
-		RequiredFields = requiredFields;
-	}
-
-	/**
-	 * @return the optionalFields
-	 */
-	public Map<String, DataType> getOptionalFields() {
-		return OptionalFields;
-	}
-
-	/**
-	 * @param optionalFields
-	 *            the optionalFields to set
-	 */
-	public void setOptionalFields(Map<String, DataType> optionalFields) {
-		OptionalFields = optionalFields;
-	}
-
-	/**
-	 * @return the complexFields
-	 */
-	public Set<BaseComplexField> getComplexFields() {
-		return ComplexFields;
-	}
-
-	/**
-	 * @param complexFields
-	 *            the complexFields to set
-	 */
-	public void setComplexFields(Set<BaseComplexField> complexFields) {
-		ComplexFields = complexFields;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Entity [name=" + name + ", RequiredFields=" + RequiredFields
-				+ ", OptionalFields=" + OptionalFields + ", ComplexFields="
-				+ ComplexFields + "]";
 	}
 
 	/*
@@ -121,4 +66,75 @@ public class Entity implements Serializable {
 		return true;
 	}
 
+	/**
+	 * @return the relationships
+	 */
+	public EntityRelationship getRelationships() {
+		return relationships;
+	}
+
+	/**
+	 * @param relationships
+	 *            the relationships to set
+	 */
+	public void setRelationships(EntityRelationship relationships) {
+		this.relationships = relationships;
+	}
+
+	/**
+	 * @return the requiredFields
+	 */
+	public Map<String, DataType> getRequiredFields() {
+		return requiredFields;
+	}
+
+	/**
+	 * @param requiredFields
+	 *            the requiredFields to set
+	 */
+	public void setRequiredFields(Map<String, DataType> requiredFields) {
+		this.requiredFields = requiredFields;
+	}
+
+	/**
+	 * @return the optionalFields
+	 */
+	public Map<String, DataType> getOptionalFields() {
+		return optionalFields;
+	}
+
+	/**
+	 * @param optionalFields
+	 *            the optionalFields to set
+	 */
+	public void setOptionalFields(Map<String, DataType> optionalFields) {
+		this.optionalFields = optionalFields;
+	}
+
+	/**
+	 * @return the complexFields
+	 */
+	public Set<BaseComplexField> getComplexFields() {
+		return complexFields;
+	}
+
+	/**
+	 * @param complexFields
+	 *            the complexFields to set
+	 */
+	public void setComplexFields(Set<BaseComplexField> complexFields) {
+		this.complexFields = complexFields;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Entity [name=" + name + ", requiredFields=" + requiredFields
+				+ ", optionalFields=" + optionalFields + ", complexFields="
+				+ complexFields + ", relationships=" + relationships + "]";
+	}
 }
