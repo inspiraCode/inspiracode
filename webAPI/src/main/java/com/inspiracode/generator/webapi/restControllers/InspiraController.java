@@ -10,11 +10,11 @@ import com.inspiracode.generator.webapi.model.Djson;
 
 @Controller
 @RequestMapping("/inspiracode")
-public class InspireController {
+public class InspiraController {
 
 	@RequestMapping(method = RequestMethod.POST)
-	public @ResponseBody String generate(@RequestBody Djson djson) {
+	public @ResponseBody CommonJsonResponse generate(@RequestBody Djson djson) {
 		System.out.println(djson);
-		return "OK";
+		return new CommonJsonResponse();
 	}
 }
