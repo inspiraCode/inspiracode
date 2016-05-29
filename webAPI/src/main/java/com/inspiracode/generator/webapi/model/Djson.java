@@ -9,22 +9,13 @@ public class Djson implements Serializable {
 	private static final long serialVersionUID = 1L;	
 
 	
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Djson [projectName=" + projectName + ", description="
-				+ description + ", roles=" + roles + ", deployments="
-				+ deployments + ", entities=" + entities + "]";
-	}
-
 	private String projectName;
 	private String description;
-	private Set<String> roles = new HashSet<String>();
-	private Set<Deployment> deployments = new HashSet<Deployment>();
-	private Set<Entity> entities = new HashSet<Entity>();
+	private Set<String> roles = new HashSet<>();
+	private Set<Deployment> deployments = new HashSet<>();
+	private Set<Entity> documents = new HashSet<>();
+	private Set<Entity> entities = new HashSet<>();
+	
 
 	/**
 	 * @return the projectName
@@ -98,4 +89,31 @@ public class Djson implements Serializable {
 	public void setEntities(Set<Entity> entities) {
 		this.entities = entities;
 	}
+
+	/**
+	 * @return the documents
+	 */
+	public Set<Entity> getDocuments() {
+		return documents;
+	}
+
+	/**
+	 * @param documents the documents to set
+	 */
+	public void setDocuments(Set<Entity> documents) {
+		this.documents = documents;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Djson [projectName=" + projectName + ", description="
+				+ description + ", roles=" + roles + ", deployments="
+				+ deployments + ", documents=" + documents + ", entities="
+				+ entities + "]";
+	}
+	
+	
 }
