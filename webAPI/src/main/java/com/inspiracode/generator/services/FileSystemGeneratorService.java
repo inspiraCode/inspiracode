@@ -29,21 +29,47 @@ public class FileSystemGeneratorService implements GeneratorService {
 
 	@Override
 	public void generate(Djson djson) {
-		String pomFile = readFile("molds/backend/pom.xml");
-		// TODO Null safe for deployments
-		Deployment deployment = djson.getDeployments().iterator().next();
-		pomFile = pomFile.replaceAll("[\\{]{2}appName[\\}]{2}",
-				Utils.ToVariable(deployment.getAppName()));
-		pomFile = pomFile.replaceAll("[\\{]{2}companyVar[\\}]{2}",
-				Utils.ToVariable(djson.getTargetCompany()));
-		pomFile = pomFile.replaceAll("[\\{]{2}version[\\}]{2}",
-				deployment.getVersion());
-		pomFile = pomFile.replaceAll("[\\{]{2}description[\\}]{2}",
-				djson.getDescription());
 
-		System.out.println(pomFile);
-		writeFile(pomFile, "pom.xml", targetDirectory);
+		createDirectory(targetDirectory);
+		createDirectory(targetDirectory + "\\backend");
 
+		// String pomFile = readFile("molds/backend/pom.xml");
+		// // TODO Null safe for deployments
+		// Deployment deployment = djson.getDeployments().iterator().next();
+		// pomFile = pomFile.replaceAll("[\\{]{2}appName[\\}]{2}",
+		// Utils.ToVariable(deployment.getAppName()));
+		// pomFile = pomFile.replaceAll("[\\{]{2}companyVar[\\}]{2}",
+		// Utils.ToVariable(djson.getTargetCompany()));
+		// pomFile = pomFile.replaceAll("[\\{]{2}version[\\}]{2}",
+		// deployment.getVersion());
+		// pomFile = pomFile.replaceAll("[\\{]{2}description[\\}]{2}",
+		// djson.getDescription());
+
+		// System.out.println(pomFile);
+		// writeFile(pomFile, "pom.xml", targetDirectory);
+
+	}
+
+	private void runCommand(String targetDirectory, String command, String... args){
+		ProcessBuilder pb = new ProcessBuilder(command);
+		pb.directory(new File(targetDirectory));
+		try {
+			pb.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void createDirectory(String targetDirectory) {
+		Path p = Paths.get(targetDirectory);
+
+		try {
+			Files.createDirectories(p);
+
+		} catch (IOException x) {
+			System.err.println(x);
+		}
 	}
 
 	private String readFile(String fileName) {
@@ -75,10 +101,13 @@ public class FileSystemGeneratorService implements GeneratorService {
 	private void writeFile(String content, String file, String targetDirectory) {
 
 		Path p = Paths.get(targetDirectory + file);
+
 		byte data[] = content.getBytes();
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, StandardOpenOption.CREATE,
 				StandardOpenOption.TRUNCATE_EXISTING))) {
+
+			Files.createDirectories(p);
 			out.write(data, 0, data.length);
 		} catch (IOException x) {
 			System.err.println(x);
