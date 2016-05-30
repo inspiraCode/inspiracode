@@ -1,15 +1,22 @@
 package com.inspiracode.generator.services;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inspiracode.generator.utils.Utils;
 import com.inspiracode.generator.webapi.model.Deployment;
 import com.inspiracode.generator.webapi.model.Djson;
 
@@ -23,13 +30,20 @@ public class FileSystemGeneratorService implements GeneratorService {
 	@Override
 	public void generate(Djson djson) {
 		String pomFile = readFile("molds/backend/pom.xml");
-		//TODO Null safe for deployments
+		// TODO Null safe for deployments
 		Deployment deployment = djson.getDeployments().iterator().next();
-		pomFile = pomFile.replaceAll("[\\{]{2}appName[\\}]{2}", deployment.getAppName());		
-		pomFile = pomFile.replaceAll("[\\{]{2}company[\\}]{2}", djson.getTargetCompany());
-		pomFile = pomFile.replaceAll("[\\{]{2}version[\\}]{2}", deployment.getVersion());
-		pomFile = pomFile.replaceAll("[\\{]{2}description[\\}]{2}", djson.getDescription());		
+		pomFile = pomFile.replaceAll("[\\{]{2}appName[\\}]{2}",
+				Utils.ToVariable(deployment.getAppName()));
+		pomFile = pomFile.replaceAll("[\\{]{2}companyVar[\\}]{2}",
+				Utils.ToVariable(djson.getTargetCompany()));
+		pomFile = pomFile.replaceAll("[\\{]{2}version[\\}]{2}",
+				deployment.getVersion());
+		pomFile = pomFile.replaceAll("[\\{]{2}description[\\}]{2}",
+				djson.getDescription());
+
 		System.out.println(pomFile);
+		writeFile(pomFile, "pom.xml", targetDirectory);
+
 	}
 
 	private String readFile(String fileName) {
@@ -56,6 +70,19 @@ public class FileSystemGeneratorService implements GeneratorService {
 		}
 
 		return result.toString();
+	}
+
+	private void writeFile(String content, String file, String targetDirectory) {
+
+		Path p = Paths.get(targetDirectory + file);
+		byte data[] = content.getBytes();
+		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
+				p, StandardOpenOption.CREATE,
+				StandardOpenOption.TRUNCATE_EXISTING))) {
+			out.write(data, 0, data.length);
+		} catch (IOException x) {
+			System.err.println(x);
+		}
 	}
 
 	/**

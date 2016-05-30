@@ -10,7 +10,7 @@ public class Utils {
 
 		StringBuilder result = new StringBuilder();
 		String[] valueSplitted = value.split(" ");
-		result.append(valueSplitted[0]);
+		result.append(valueSplitted[0].toLowerCase());
 		for (int i = 1; i < valueSplitted.length; i++) {
 			result.append(valueSplitted[i].substring(0, 1).toUpperCase());
 			result.append(valueSplitted[i].substring(1).toLowerCase());
