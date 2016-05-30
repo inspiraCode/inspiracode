@@ -4,6 +4,7 @@
 {
     "projectName": "un proyecto",
     "description": "una description",
+    "targetCompany": "foo",
     "deployments": [],
     "roles": [],
     "workflows": [],

@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Alfredo
+ *
+ */
 public class Djson implements Serializable {
 
 	private static final long serialVersionUID = 1L;	
@@ -11,6 +15,7 @@ public class Djson implements Serializable {
 	
 	private String projectName;
 	private String description;
+	private String targetCompany;
 	private Set<String> roles = new HashSet<>();
 	private Set<Deployment> deployments = new HashSet<>();
 	private Set<Entity> documents = new HashSet<>();
@@ -104,15 +109,31 @@ public class Djson implements Serializable {
 		this.documents = documents;
 	}
 
+	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "Djson [projectName=" + projectName + ", description="
-				+ description + ", roles=" + roles + ", deployments="
-				+ deployments + ", documents=" + documents + ", entities="
-				+ entities + "]";
+				+ description + ", targetCompany=" + targetCompany + ", roles="
+				+ roles + ", deployments=" + deployments + ", documents="
+				+ documents + ", entities=" + entities + "]";
+	}
+
+	/**
+	 * @return the targetCompany
+	 */
+	public String getTargetCompany() {
+		return targetCompany;
+	}
+
+	/**
+	 * @param targetCompany the targetCompany to set
+	 */
+	public void setTargetCompany(String targetCompany) {
+		this.targetCompany = targetCompany;
 	}
 	
 	
