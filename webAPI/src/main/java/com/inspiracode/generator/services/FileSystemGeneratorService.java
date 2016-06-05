@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class FileSystemGeneratorService implements GeneratorService {
 
 	@Value("${fs.destination}")
 	private String targetDirectory;
-	
+
 	@Value("${MAVEN_COMMAND}")
 	private String mavenCMD;
 
@@ -34,20 +35,30 @@ public class FileSystemGeneratorService implements GeneratorService {
 		String groupId = String.format("-DgroupId=com.%s.%s", Utils.ToVariable(djson.getTargetCompany()),
 				Utils.ToVariable(djson.getProjectName()));
 		String artifactId = String.format("-DartifactId=%s", Utils.ToVariable(djson.getProjectName()));
-		String[] mvnParameters = {"-B", "archetype:generate", "-DarchetypeGroupId=org.apache.maven.archetypes", groupId, artifactId, "-DinteractiveMode=false" };
+		String[] mvnParameters = { "-B", "archetype:generate", "-DarchetypeGroupId=org.apache.maven.archetypes",
+				groupId, artifactId, "-DinteractiveMode=false" };
 		runCommand(backendDirectory, mavenCMD, mvnParameters);
 	}
 
 	private void runCommand(String targetDirectory, String command, String... args) throws GeneratorServiceException {
 		ProcessBuilder pb = new ProcessBuilder(command);
 		pb.command().addAll(Arrays.asList(args));
-		
+
 		pb.directory(new File(targetDirectory));
-		//TODO Configure Log destination
-		pb.redirectOutput(new File("c:\\temp\\Maven.log"));
 		try {
-			pb.start();
-			//TODO evaluate process result
+			Process p = pb.start();
+			try (Scanner in = new Scanner(p.getInputStream())) {
+				while (in.hasNextLine())
+					System.out.println(in.nextLine());
+			}
+
+			int result = p.exitValue();
+			if (result != 0) {
+				String errMessage = "The generator process for %s could not be successfully completed";
+				throw new GeneratorServiceException(String.format(errMessage, command));
+			} else {
+				System.out.println("GENERATOR PROCESS COMPLETED FOR " + command);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new GeneratorServiceException("Unable to execute command: " + command + ", " + e.getMessage());
