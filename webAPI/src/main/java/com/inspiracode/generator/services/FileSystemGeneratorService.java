@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Scanner;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +25,9 @@ public class FileSystemGeneratorService implements GeneratorService {
 	@Value("${MAVEN_COMMAND}")
 	private String mavenCMD;
 
+	@Value("${os.name}")
+	String osName;
+
 	@Override
 	public void generate(Djson djson) throws GeneratorServiceException {
 
@@ -32,36 +35,41 @@ public class FileSystemGeneratorService implements GeneratorService {
 		String backendDirectory = targetDirectory + "backend";
 		createDirectory(backendDirectory);
 
-		String groupId = String.format("-DgroupId=com.%s.%s", Utils.ToVariable(djson.getTargetCompany()),
+		String groupId = String.format("-DgroupId=com.%s.%s",
+				Utils.ToVariable(djson.getTargetCompany()),
 				Utils.ToVariable(djson.getProjectName()));
-		String artifactId = String.format("-DartifactId=%s", Utils.ToVariable(djson.getProjectName()));
-		String[] mvnParameters = { "-B", "archetype:generate", "-DarchetypeGroupId=org.apache.maven.archetypes",
-				groupId, artifactId, "-DinteractiveMode=false" };
+		String artifactId = String.format("-DartifactId=%s",
+				Utils.ToVariable(djson.getProjectName()));
+		String[] mvnParameters = { "-B", "archetype:generate",
+				"-DarchetypeGroupId=org.apache.maven.archetypes", groupId,
+				artifactId, "-DinteractiveMode=false" };
 		runCommand(backendDirectory, mavenCMD, mvnParameters);
 	}
 
-	private void runCommand(String targetDirectory, String command, String... args) throws GeneratorServiceException {
-		ProcessBuilder pb = new ProcessBuilder(command);
-		pb.command().addAll(Arrays.asList(args));
+	private boolean isWindows() {
+		return osName.startsWith("Windows");
+	}
 
-		pb.directory(new File(targetDirectory));
+	private void runCommand(String targetDirectory, String command,
+			String... args) throws GeneratorServiceException {
+
 		try {
-			Process p = pb.start();
-			try (Scanner in = new Scanner(p.getInputStream())) {
-				while (in.hasNextLine())
-					System.out.println(in.nextLine());
+			if (isWindows()) {
+				command = "cmd /c " + command;
+			}
+			CommandLine cmdLine = CommandLine.parse(command);
+
+			for (String arg : args) {
+				cmdLine.addArgument(arg);
 			}
 
-			int result = p.exitValue();
-			if (result != 0) {
-				String errMessage = "The generator process for %s could not be successfully completed";
-				throw new GeneratorServiceException(String.format(errMessage, command));
-			} else {
-				System.out.println("GENERATOR PROCESS COMPLETED FOR " + command);
-			}
+			DefaultExecutor executor = new DefaultExecutor();
+			executor.setWorkingDirectory(new File(targetDirectory));
+
+			executor.execute(cmdLine);
+
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new GeneratorServiceException("Unable to execute command: " + command + ", " + e.getMessage());
+			throw new GeneratorServiceException("Error during : " + command);
 		}
 	}
 

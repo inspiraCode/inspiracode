@@ -36,6 +36,13 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 		</dependency>
+		
+		<!-- Library that allow us to execute command line programs, without need the whole root of the program to execute -->
+		<dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+            <version>1.1</version>
+        </dependency>
 
 	</dependencies>
 
