@@ -31,21 +31,39 @@ public class FileSystemGeneratorService implements GeneratorService {
 	@Override
 	public void generate(Djson djson) throws GeneratorServiceException {
 
+		String targetCompany = Utils.ToVariable(djson.getTargetCompany());
+		String projectName = Utils.ToVariable(djson.getProjectName());
+
 		createDirectory(targetDirectory);
 		String backendDirectory = targetDirectory + "backend";
 		createDirectory(backendDirectory);
 
-		String groupId = String.format("-DgroupId=com.%s.%s",
-				Utils.ToVariable(djson.getTargetCompany()),
-				Utils.ToVariable(djson.getProjectName()));
-		String artifactId = String.format("-DartifactId=%s",
-				Utils.ToVariable(djson.getProjectName()));
+		String groupId = String.format("-DgroupId=com.%s.%s", targetCompany,
+				projectName);
+		String artifactId = String.format("-DartifactId=%s", projectName);
 		String[] mvnParameters = { "-B", "archetype:generate",
 				"-DarchetypeGroupId=am.ik.archetype",
 				"-DarchetypeArtifactId=spring-boot-blank-archetype",
-				"-DarchetypeVersion=1.0.6", 
-				groupId, artifactId, "-DinteractiveMode=false" };
-		runCommand(backendDirectory, mavenCMD, mvnParameters);		
+				"-DarchetypeVersion=1.0.6", groupId, artifactId,
+				"-DinteractiveMode=false" };
+		runCommand(backendDirectory, mavenCMD, mvnParameters);
+		try {
+			cleanup(targetCompany, projectName);
+		} catch (IOException e) {
+			throw new GeneratorServiceException(e.getMessage());
+		}
+	}
+
+	private void cleanup(String company, String projectName) throws IOException {
+		// remove useless Controller from SpringBoot artifact
+		Files.delete(Paths.get(targetDirectory, "backend\\" + projectName
+				+ "\\src\\main\\java\\com\\" + company + "\\" + projectName
+				+ "\\HelloController.java"));
+		Files.delete(Paths.get(targetDirectory, "backend\\" + projectName
+				+ "\\src\\main\\resources\\templates\\hello.html"));
+		Files.delete(Paths.get(targetDirectory, "backend\\" + projectName
+				+ "\\src\\test\\java\\com\\" + company + "\\" + projectName
+				+ "\\HelloControllerTest.java"));
 	}
 
 	private boolean isWindows() {
