@@ -41,9 +41,11 @@ public class FileSystemGeneratorService implements GeneratorService {
 		String artifactId = String.format("-DartifactId=%s",
 				Utils.ToVariable(djson.getProjectName()));
 		String[] mvnParameters = { "-B", "archetype:generate",
-				"-DarchetypeGroupId=org.apache.maven.archetypes", groupId,
-				artifactId, "-DinteractiveMode=false" };
-		runCommand(backendDirectory, mavenCMD, mvnParameters);
+				"-DarchetypeGroupId=am.ik.archetype",
+				"-DarchetypeArtifactId=spring-boot-blank-archetype",
+				"-DarchetypeVersion=1.0.6", 
+				groupId, artifactId, "-DinteractiveMode=false" };
+		runCommand(backendDirectory, mavenCMD, mvnParameters);		
 	}
 
 	private boolean isWindows() {
