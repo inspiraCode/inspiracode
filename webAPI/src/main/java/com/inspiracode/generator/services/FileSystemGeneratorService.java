@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration.GitInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,9 @@ public class FileSystemGeneratorService implements GeneratorService {
 	@Value("${fs.destination}")
 	private String targetDirectory;
 
+	@Value("${spoc.gitURL}")
+	private String spocGitUrl;
+
 	@Value("${MAVEN_COMMAND}")
 	private String mavenCMD;
 
@@ -30,7 +34,36 @@ public class FileSystemGeneratorService implements GeneratorService {
 
 	@Override
 	public void generate(Djson djson) throws GeneratorServiceException {
+		// scaffoldBaseCode();
+		installSpoc();
+		// scaffoldDJSON(djson);
+	}
 
+	private void installSpoc() throws GeneratorServiceException {
+
+		String[] spocParameters = { "clone", spocGitUrl };
+		runCommand(targetDirectory, "git", spocParameters);
+		System.out.println("Spoc project cloned successfully.");
+
+		System.out.println("Installing Spoc...");
+		String[] spocInstallParameters = { "clean", "install" };
+		runCommand(targetDirectory + "inspiracode-seed\\Backend\\spoc",
+				"mvn", spocInstallParameters);
+		System.out.println("Spoc Installation process completed.");
+	}
+
+	private void scaffoldBaseCode() throws GeneratorServiceException {
+		String groupId = String.format("-DgroupId=com.%s.%s", "inspiracode",
+				"spoc");
+		String artifactId = String.format("-DartifactId=%s", "spoc");
+		String[] mvnParameters = { "-B", "archetype:generate",
+				"-DarchetypeArtifactId=maven-archetype-quickstart", groupId,
+				artifactId, "-DinteractiveMode=false" };
+		runCommand("c:\\gitRepositories\\inspiracode-seed\\Backend", mavenCMD,
+				mvnParameters);
+	}
+
+	private void scaffoldDJSON(Djson djson) throws GeneratorServiceException {
 		String targetCompany = Utils.ToVariable(djson.getTargetCompany());
 		String projectName = Utils.ToVariable(djson.getProjectName());
 
