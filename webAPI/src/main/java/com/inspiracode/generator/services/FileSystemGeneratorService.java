@@ -6,12 +6,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration.GitInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.inspiracode.generator.utils.Utils;
 import com.inspiracode.generator.webapi.model.Djson;
@@ -32,11 +42,82 @@ public class FileSystemGeneratorService implements GeneratorService {
 	@Value("${os.name}")
 	String osName;
 
+	@Value("${spoc.version}")
+	String spocVersion;
+
+	private String targetCompany;
+	private String projectName;
+	private String backendDirectory;
+
 	@Override
 	public void generate(Djson djson) throws GeneratorServiceException {
-		// scaffoldBaseCode();
+		init(djson);
 		installSpoc();
-		// scaffoldDJSON(djson);
+		scaffoldDJSON(djson);
+
+		// Adding Spoc Dependency:
+		addPomDependency(backendDirectory + "/" + projectName + "/pom.xml",
+				"com.inspiracode.spoc", "spoc", spocVersion);
+	}
+
+	private void init(Djson djson) {
+		targetCompany = Utils.ToVariable(djson.getTargetCompany());
+		projectName = Utils.ToVariable(djson.getProjectName());
+		backendDirectory = targetDirectory + "backend";
+	}
+
+	private void addPomDependency(String pomTargetName, String groupId,
+			String artifactId, String version) {
+		try {
+			File fXmlFile = new File(pomTargetName);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+
+			// optional, but recommended
+			// read this -
+			// http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+			doc.getDocumentElement().normalize();
+
+			System.out.println("-------------------------------------------");
+			System.out.println("Adding dependency to:" + pomTargetName
+					+ "\t\nGroupID: " + groupId + "\t\nArtifactId" + artifactId
+					+ "\t\nVersion" + version);
+			System.out.println("-------------------------------------------");
+
+			NodeList dependenciesNodeList = doc
+					.getElementsByTagName("dependencies");
+
+			Node nodeDependencies = dependenciesNodeList.item(0);
+
+			Element spocDependency = doc.createElement("dependency");
+
+			Element groupIdElement = doc.createElement("groupId");
+			groupIdElement.appendChild(doc.createTextNode(groupId));
+			spocDependency.appendChild(groupIdElement);
+
+			Element artifactIdElement = doc.createElement("artifactId");
+			artifactIdElement.appendChild(doc.createTextNode(artifactId));
+			spocDependency.appendChild(artifactIdElement);
+
+			Element versionElement = doc.createElement("version");
+			versionElement.appendChild(doc.createTextNode(version));
+			spocDependency.appendChild(versionElement);
+
+			nodeDependencies.appendChild(spocDependency);
+
+			DOMSource source = new DOMSource(doc);
+
+			TransformerFactory transformerFactory = TransformerFactory
+					.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			StreamResult result = new StreamResult(pomTargetName);
+			transformer.transform(source, result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void installSpoc() throws GeneratorServiceException {
@@ -47,28 +128,13 @@ public class FileSystemGeneratorService implements GeneratorService {
 
 		System.out.println("Installing Spoc...");
 		String[] spocInstallParameters = { "clean", "install" };
-		runCommand(targetDirectory + "inspiracode-seed\\Backend\\spoc",
-				"mvn", spocInstallParameters);
+		runCommand(targetDirectory + "inspiracode-seed\\Backend\\spoc", "mvn",
+				spocInstallParameters);
 		System.out.println("Spoc Installation process completed.");
 	}
 
-	private void scaffoldBaseCode() throws GeneratorServiceException {
-		String groupId = String.format("-DgroupId=com.%s.%s", "inspiracode",
-				"spoc");
-		String artifactId = String.format("-DartifactId=%s", "spoc");
-		String[] mvnParameters = { "-B", "archetype:generate",
-				"-DarchetypeArtifactId=maven-archetype-quickstart", groupId,
-				artifactId, "-DinteractiveMode=false" };
-		runCommand("c:\\gitRepositories\\inspiracode-seed\\Backend", mavenCMD,
-				mvnParameters);
-	}
-
 	private void scaffoldDJSON(Djson djson) throws GeneratorServiceException {
-		String targetCompany = Utils.ToVariable(djson.getTargetCompany());
-		String projectName = Utils.ToVariable(djson.getProjectName());
-
 		createDirectory(targetDirectory);
-		String backendDirectory = targetDirectory + "backend";
 		createDirectory(backendDirectory);
 
 		String groupId = String.format("-DgroupId=com.%s.%s", targetCompany,
@@ -151,5 +217,4 @@ public class FileSystemGeneratorService implements GeneratorService {
 	public void setTargetDirectory(String targetDirectory) {
 		this.targetDirectory = targetDirectory;
 	}
-
 }
