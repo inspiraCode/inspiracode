@@ -49,7 +49,7 @@ var mainBody = {
 
 var app = {
     view: function() {
-        return [m.component(mainHeader), mainBody];
+        return [m.component(mainHeader), layoutWidget];
     }
 };
 
